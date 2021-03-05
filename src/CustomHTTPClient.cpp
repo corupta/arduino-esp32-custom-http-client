@@ -5,7 +5,7 @@
  * Created on: 02.11.2015
  *
  * Copyright (c) 2015 Markus Sattler. All rights reserved.
- * This file is part of the HTTPClient for Arduino.
+ * This file is part of the CustomHTTPClient for Arduino.
  * Port to ESP32 by Evandro Luis Copercini (2017),
  * changed fingerprints to CA verification.
  *
@@ -73,15 +73,11 @@ public:
 
     bool verify(WiFiClient& client, const char* host) override
     {
-        WiFiClientSecure& wcs = static_cast<WiFiClientSecure&>(client);
-        if (_cacert == nullptr) {
-            wcs.setInsecure();
-        } else {
-            wcs.setCACert(_cacert);
-            wcs.setCertificate(_clicert);
-            wcs.setPrivateKey(_clikey);
-        }
-        return true;
+         WiFiClientSecure& wcs = static_cast<WiFiClientSecure&>(client);
+         wcs.setCACert(_cacert);
+         wcs.setCertificate(_clicert);
+         wcs.setPrivateKey(_clikey);
+         return true;
     }
 
 protected:
@@ -254,6 +250,9 @@ bool CustomHTTPClient::beginInternal(String url, const char* expectedProtocol)
 
     url.remove(0, (index + 3)); // remove http:// or https://
 
+    index = url.indexOf('/');
+    url.remove(0, (index + 3)); // remove http:// or https://
+
     String host;
 
     index = url.indexOf('/');
@@ -286,20 +285,13 @@ bool CustomHTTPClient::beginInternal(String url, const char* expectedProtocol)
 
     // get port
     index = host.indexOf(':');
-    String the_host;
     if(index >= 0) {
-        the_host = host.substring(0, index); // hostname
+        _host = host.substring(0, index); // hostname
         host.remove(0, (index + 1)); // remove hostname + :
         _port = host.toInt(); // get port
     } else {
-        the_host = host;
+        _host = host;
     }
-    if(_host != the_host && connected()){
-        log_d("switching host from '%s' to '%s'. disconnecting first", _host.c_str(), the_host.c_str());
-        _canReuse = false;
-        disconnect(true);
-    }
-    _host = the_host;
     _uri = url;
     log_d("host: %s port: %d url: %s", _host.c_str(), _port, _uri.c_str());
     return true;
@@ -611,7 +603,7 @@ int CustomHTTPClient::sendRequest(const char * type, uint8_t * payload, size_t s
         }
 
         code = handleHeaderResponse();
-        log_d("sendRequest code=%d\n", code);
+        Serial.printf("sendRequest code=%d\n", code);
 
         // Handle redirections as stated in RFC document:
         // https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
@@ -947,19 +939,21 @@ int CustomHTTPClient::writeToStream(Stream * stream)
  */
 String CustomHTTPClient::getString(void)
 {
-    // _size can be -1 when Server sends no Content-Length header
-    if(_size > 0 || _size == -1) {
-        StreamString sstring;
-        // try to reserve needed memory (noop if _size == -1)
-        if(sstring.reserve((_size + 1))) {
-            writeToStream(&sstring);
-            return sstring;
-        } else {
+    StreamString sstring;
+
+    if(_size > 0) {
+        // try to reserve needed memmory
+        if(!sstring.reserve((_size + 1))) {
             log_d("not enough memory to reserve a string! need: %d", (_size + 1));
+            return "";
         }
     }
+    else {
+        return "";
+    }
 
-    return "";
+    writeToStream(&sstring);
+    return sstring;
 }
 
 /**
@@ -1214,7 +1208,6 @@ int CustomHTTPClient::handleHeaderResponse()
 
     _transferEncoding = HTTPC_TE_IDENTITY;
     unsigned long lastDataTime = millis();
-    bool firstLine = true;
 
     while(connected()) {
         size_t len = _client->available();
@@ -1226,13 +1219,11 @@ int CustomHTTPClient::handleHeaderResponse()
 
             log_v("RX: '%s'", headerLine.c_str());
 
-            if(firstLine) {
-		firstLine = false;
-                if(_canReuse && headerLine.startsWith("HTTP/1.")) {
+            if(headerLine.startsWith("HTTP/1.")) {
+                if(_canReuse) {
                     _canReuse = (headerLine[sizeof "HTTP/1." - 1] != '0');
                 }
-                int codePos = headerLine.indexOf(' ') + 1;
-                _returnCode = headerLine.substring(codePos, headerLine.indexOf(' ', codePos)).toInt();
+                _returnCode = headerLine.substring(9, headerLine.indexOf(' ', 9)).toInt();
             } else if(headerLine.indexOf(':')) {
                 String headerName = headerLine.substring(0, headerLine.indexOf(':'));
                 String headerValue = headerLine.substring(headerLine.indexOf(':') + 1);
@@ -1342,9 +1333,9 @@ int CustomHTTPClient::writeToStreamDataBlock(Stream * stream, int size)
                     readBytes = buff_size;
                 }
 
-        		// stop if no more reading
-        		if (readBytes == 0)
-        			break;
+		// stop if no more reading
+		if (readBytes == 0)
+			break;
 
                 // read data
                 int bytesRead = _client->readBytes(buff, readBytes);
@@ -1470,10 +1461,8 @@ bool CustomHTTPClient::setURL(const String& url)
         _port = (_protocol == "https" ? 443 : 80);
     }
 
-    // disconnect but preserve _client.
-    // Also have to keep the connection otherwise it will free some of the memory used by _client
-    // and will blow up later when trying to do _client->available() or similar
-    _canReuse = true;
+    // disconnect but preserve _client (clear _canReuse so disconnect will close the connection)
+    _canReuse = false;
     disconnect(true);
     return beginInternal(url, _protocol.c_str());
 }
