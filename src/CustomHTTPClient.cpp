@@ -1,6 +1,6 @@
 #include <HardwareSerial.h>
 /**
- * HTTPClient.cpp
+ * CustomHTTPClient.cpp
  *
  * Created on: 02.11.2015
  *
@@ -37,7 +37,7 @@
 #include <StreamString.h>
 #include <base64.h>
 
-#include "HTTPClient.h"
+#include "CustomHTTPClient.h"
 
 #ifdef HTTPCLIENT_1_1_COMPATIBLE
 class TransportTraits
@@ -94,14 +94,14 @@ protected:
 /**
  * constructor
  */
-HTTPClient::HTTPClient()
+CustomHTTPClient::CustomHTTPClient()
 {
 }
 
 /**
  * destructor
  */
-HTTPClient::~HTTPClient()
+CustomHTTPClient::~CustomHTTPClient()
 {
     if(_client) {
         _client->stop();
@@ -111,7 +111,7 @@ HTTPClient::~HTTPClient()
     }
 }
 
-void HTTPClient::clear()
+void CustomHTTPClient::clear()
 {
     _returnCode = 0;
     _size = -1;
@@ -126,7 +126,7 @@ void HTTPClient::clear()
  * @param https bool
  * @return success bool
  */
-bool HTTPClient::begin(WiFiClient &client, String url) {
+bool CustomHTTPClient::begin(WiFiClient &client, String url) {
 #ifdef HTTPCLIENT_1_1_COMPATIBLE
     if(_tcpDeprecated) {
         log_d("mix up of new and deprecated api");
@@ -164,7 +164,7 @@ bool HTTPClient::begin(WiFiClient &client, String url) {
  * @param https bool
  * @return success bool
  */
-bool HTTPClient::begin(WiFiClient &client, String host, uint16_t port, String uri, bool https)
+bool CustomHTTPClient::begin(WiFiClient &client, String host, uint16_t port, String uri, bool https)
 {
 #ifdef HTTPCLIENT_1_1_COMPATIBLE
     if(_tcpDeprecated) {
@@ -186,7 +186,7 @@ bool HTTPClient::begin(WiFiClient &client, String host, uint16_t port, String ur
 
 
 #ifdef HTTPCLIENT_1_1_COMPATIBLE
-bool HTTPClient::begin(String url, const char* CAcert)
+bool CustomHTTPClient::begin(String url, const char* CAcert)
 {
     if(_client && !_tcpDeprecated) {
         log_d("mix up of new and deprecated api");
@@ -212,7 +212,7 @@ bool HTTPClient::begin(String url, const char* CAcert)
  * parsing the url for all needed parameters
  * @param url String
  */
-bool HTTPClient::begin(String url)
+bool CustomHTTPClient::begin(String url)
 {
     if(_client && !_tcpDeprecated) {
         log_d("mix up of new and deprecated api");
@@ -234,7 +234,7 @@ bool HTTPClient::begin(String url)
 }
 #endif // HTTPCLIENT_1_1_COMPATIBLE
 
-bool HTTPClient::beginInternal(String url, const char* expectedProtocol)
+bool CustomHTTPClient::beginInternal(String url, const char* expectedProtocol)
 {
     log_v("url: %s", url.c_str());
     clear();
@@ -306,7 +306,7 @@ bool HTTPClient::beginInternal(String url, const char* expectedProtocol)
 }
 
 #ifdef HTTPCLIENT_1_1_COMPATIBLE
-bool HTTPClient::begin(String host, uint16_t port, String uri)
+bool CustomHTTPClient::begin(String host, uint16_t port, String uri)
 {
     if(_client && !_tcpDeprecated) {
         log_d("mix up of new and deprecated api");
@@ -323,7 +323,7 @@ bool HTTPClient::begin(String host, uint16_t port, String uri)
     return true;
 }
 
-bool HTTPClient::begin(String host, uint16_t port, String uri, const char* CAcert)
+bool CustomHTTPClient::begin(String host, uint16_t port, String uri, const char* CAcert)
 {
     if(_client && !_tcpDeprecated) {
         log_d("mix up of new and deprecated api");
@@ -344,7 +344,7 @@ bool HTTPClient::begin(String host, uint16_t port, String uri, const char* CAcer
     return true;
 }
 
-bool HTTPClient::begin(String host, uint16_t port, String uri, const char* CAcert, const char* cli_cert, const char* cli_key)
+bool CustomHTTPClient::begin(String host, uint16_t port, String uri, const char* CAcert, const char* cli_cert, const char* cli_key)
 {
     if(_client && !_tcpDeprecated) {
         log_d("mix up of new and deprecated api");
@@ -370,7 +370,7 @@ bool HTTPClient::begin(String host, uint16_t port, String uri, const char* CAcer
  * end
  * called after the payload is handled
  */
-void HTTPClient::end(void)
+void CustomHTTPClient::end(void)
 {
     disconnect(false);
     clear();
@@ -382,7 +382,7 @@ void HTTPClient::end(void)
  * disconnect
  * close the TCP socket
  */
-void HTTPClient::disconnect(bool preserveClient)
+void CustomHTTPClient::disconnect(bool preserveClient)
 {
     if(connected()) {
         if(_client->available() > 0) {
@@ -417,7 +417,7 @@ void HTTPClient::disconnect(bool preserveClient)
  * connected
  * @return connected status
  */
-bool HTTPClient::connected()
+bool CustomHTTPClient::connected()
 {
     if(_client) {
         return ((_client->available() > 0) || _client->connected());
@@ -430,7 +430,7 @@ bool HTTPClient::connected()
  * keep-alive
  * @param reuse bool
  */
-void HTTPClient::setReuse(bool reuse)
+void CustomHTTPClient::setReuse(bool reuse)
 {
     _reuse = reuse;
 }
@@ -439,7 +439,7 @@ void HTTPClient::setReuse(bool reuse)
  * set User Agent
  * @param userAgent const char *
  */
-void HTTPClient::setUserAgent(const String& userAgent)
+void CustomHTTPClient::setUserAgent(const String& userAgent)
 {
     _userAgent = userAgent;
 }
@@ -449,7 +449,7 @@ void HTTPClient::setUserAgent(const String& userAgent)
  * @param user const char *
  * @param password const char *
  */
-void HTTPClient::setAuthorization(const char * user, const char * password)
+void CustomHTTPClient::setAuthorization(const char * user, const char * password)
 {
     if(user && password) {
         String auth = user;
@@ -463,7 +463,7 @@ void HTTPClient::setAuthorization(const char * user, const char * password)
  * set the Authorizatio for the http request
  * @param auth const char * base64
  */
-void HTTPClient::setAuthorization(const char * auth)
+void CustomHTTPClient::setAuthorization(const char * auth)
 {
     if(auth) {
         _base64Authorization = auth;
@@ -474,7 +474,7 @@ void HTTPClient::setAuthorization(const char * auth)
  * set the timeout (ms) for establishing a connection to the server
  * @param connectTimeout int32_t
  */
-void HTTPClient::setConnectTimeout(int32_t connectTimeout)
+void CustomHTTPClient::setConnectTimeout(int32_t connectTimeout)
 {
     _connectTimeout = connectTimeout;
 }
@@ -483,7 +483,7 @@ void HTTPClient::setConnectTimeout(int32_t connectTimeout)
  * set the timeout for the TCP connection
  * @param timeout unsigned int
  */
-void HTTPClient::setTimeout(uint16_t timeout)
+void CustomHTTPClient::setTimeout(uint16_t timeout)
 {
     _tcpTimeout = timeout;
     if(connected()) {
@@ -495,7 +495,7 @@ void HTTPClient::setTimeout(uint16_t timeout)
  * use HTTP1.0
  * @param use
  */
-void HTTPClient::useHTTP10(bool useHTTP10)
+void CustomHTTPClient::useHTTP10(bool useHTTP10)
 {
     _useHTTP10 = useHTTP10;
     _reuse = !useHTTP10;
@@ -505,7 +505,7 @@ void HTTPClient::useHTTP10(bool useHTTP10)
  * send a GET request
  * @return http code
  */
-int HTTPClient::GET()
+int CustomHTTPClient::GET()
 {
     return sendRequest("GET");
 }
@@ -516,12 +516,12 @@ int HTTPClient::GET()
  * @param size size_t
  * @return http code
  */
-int HTTPClient::POST(uint8_t * payload, size_t size)
+int CustomHTTPClient::POST(uint8_t * payload, size_t size)
 {
     return sendRequest("POST", payload, size);
 }
 
-int HTTPClient::POST(String payload)
+int CustomHTTPClient::POST(String payload)
 {
     return POST((uint8_t *) payload.c_str(), payload.length());
 }
@@ -532,12 +532,12 @@ int HTTPClient::POST(String payload)
  * @param size size_t
  * @return http code
  */
-int HTTPClient::PATCH(uint8_t * payload, size_t size)
+int CustomHTTPClient::PATCH(uint8_t * payload, size_t size)
 {
     return sendRequest("PATCH", payload, size);
 }
 
-int HTTPClient::PATCH(String payload)
+int CustomHTTPClient::PATCH(String payload)
 {
     return PATCH((uint8_t *) payload.c_str(), payload.length());
 }
@@ -548,11 +548,11 @@ int HTTPClient::PATCH(String payload)
  * @param size size_t
  * @return http code
  */
-int HTTPClient::PUT(uint8_t * payload, size_t size) {
+int CustomHTTPClient::PUT(uint8_t * payload, size_t size) {
     return sendRequest("PUT", payload, size);
 }
 
-int HTTPClient::PUT(String payload) {
+int CustomHTTPClient::PUT(String payload) {
     return PUT((uint8_t *) payload.c_str(), payload.length());
 }
 
@@ -562,7 +562,7 @@ int HTTPClient::PUT(String payload) {
  * @param payload String        data for the message body
  * @return
  */
-int HTTPClient::sendRequest(const char * type, String payload)
+int CustomHTTPClient::sendRequest(const char * type, String payload)
 {
     return sendRequest(type, (uint8_t *) payload.c_str(), payload.length());
 }
@@ -574,7 +574,7 @@ int HTTPClient::sendRequest(const char * type, String payload)
  * @param size size_t           size for the message body if 0 not send
  * @return -1 if no info or > 0 when Content-Length is set by server
  */
-int HTTPClient::sendRequest(const char * type, uint8_t * payload, size_t size)
+int CustomHTTPClient::sendRequest(const char * type, uint8_t * payload, size_t size)
 {
     int code;
     bool redirect = false;
@@ -685,7 +685,7 @@ int HTTPClient::sendRequest(const char * type, uint8_t * payload, size_t size)
  * @param size size_t           size for the message body if 0 not Content-Length is send
  * @return -1 if no info or > 0 when Content-Length is set by server
  */
-int HTTPClient::sendRequest(const char * type, Stream * stream, size_t size)
+int CustomHTTPClient::sendRequest(const char * type, Stream * stream, size_t size)
 {
 
     if(!stream) {
@@ -821,7 +821,7 @@ int HTTPClient::sendRequest(const char * type, Stream * stream, size_t size)
  * size of message body / payload
  * @return -1 if no info or > 0 when Content-Length is set by server
  */
-int HTTPClient::getSize(void)
+int CustomHTTPClient::getSize(void)
 {
     return _size;
 }
@@ -830,7 +830,7 @@ int HTTPClient::getSize(void)
  * returns the stream of the tcp connection
  * @return WiFiClient
  */
-WiFiClient& HTTPClient::getStream(void)
+WiFiClient& CustomHTTPClient::getStream(void)
 {
     if (connected()) {
         return *_client;
@@ -845,7 +845,7 @@ WiFiClient& HTTPClient::getStream(void)
  * returns a pointer to the stream of the tcp connection
  * @return WiFiClient*
  */
-WiFiClient* HTTPClient::getStreamPtr(void)
+WiFiClient* CustomHTTPClient::getStreamPtr(void)
 {
     if(connected()) {
         return _client;
@@ -860,7 +860,7 @@ WiFiClient* HTTPClient::getStreamPtr(void)
  * @param stream Stream *
  * @return bytes written ( negative values are error codes )
  */
-int HTTPClient::writeToStream(Stream * stream)
+int CustomHTTPClient::writeToStream(Stream * stream)
 {
 
     if(!stream) {
@@ -945,7 +945,7 @@ int HTTPClient::writeToStream(Stream * stream)
  * return all payload as String (may need lot of ram or trigger out of memory!)
  * @return String
  */
-String HTTPClient::getString(void)
+String CustomHTTPClient::getString(void)
 {
     // _size can be -1 when Server sends no Content-Length header
     if(_size > 0 || _size == -1) {
@@ -967,7 +967,7 @@ String HTTPClient::getString(void)
  * @param error int
  * @return String
  */
-String HTTPClient::errorToString(int error)
+String CustomHTTPClient::errorToString(int error)
 {
     switch(error) {
     case HTTPC_ERROR_CONNECTION_REFUSED:
@@ -1003,7 +1003,7 @@ String HTTPClient::errorToString(int error)
  * @param value
  * @param first
  */
-void HTTPClient::addHeader(const String& name, const String& value, bool first, bool replace)
+void CustomHTTPClient::addHeader(const String& name, const String& value, bool first, bool replace)
 {
     // not allow set of Header handled by code
     if(!name.equalsIgnoreCase(F("Connection")) &&
@@ -1032,7 +1032,7 @@ void HTTPClient::addHeader(const String& name, const String& value, bool first, 
     }
 }
 
-void HTTPClient::collectHeaders(const char* headerKeys[], const size_t headerKeysCount)
+void CustomHTTPClient::collectHeaders(const char* headerKeys[], const size_t headerKeysCount)
 {
     _headerKeysCount = headerKeysCount;
     if(_currentHeaders) {
@@ -1044,7 +1044,7 @@ void HTTPClient::collectHeaders(const char* headerKeys[], const size_t headerKey
     }
 }
 
-String HTTPClient::header(const char* name)
+String CustomHTTPClient::header(const char* name)
 {
     for(size_t i = 0; i < _headerKeysCount; ++i) {
         if(_currentHeaders[i].key == name) {
@@ -1054,7 +1054,7 @@ String HTTPClient::header(const char* name)
     return String();
 }
 
-String HTTPClient::header(size_t i)
+String CustomHTTPClient::header(size_t i)
 {
     if(i < _headerKeysCount) {
         return _currentHeaders[i].value;
@@ -1062,7 +1062,7 @@ String HTTPClient::header(size_t i)
     return String();
 }
 
-String HTTPClient::headerName(size_t i)
+String CustomHTTPClient::headerName(size_t i)
 {
     if(i < _headerKeysCount) {
         return _currentHeaders[i].key;
@@ -1070,12 +1070,12 @@ String HTTPClient::headerName(size_t i)
     return String();
 }
 
-int HTTPClient::headers()
+int CustomHTTPClient::headers()
 {
     return _headerKeysCount;
 }
 
-bool HTTPClient::hasHeader(const char* name)
+bool CustomHTTPClient::hasHeader(const char* name)
 {
     for(size_t i = 0; i < _headerKeysCount; ++i) {
         if((_currentHeaders[i].key == name) && (_currentHeaders[i].value.length() > 0)) {
@@ -1089,7 +1089,7 @@ bool HTTPClient::hasHeader(const char* name)
  * init TCP connection and handle ssl verify if needed
  * @return true if connection is ok
  */
-bool HTTPClient::connect(void)
+bool CustomHTTPClient::connect(void)
 {
     if(connected()) {
         if(_reuse) {
@@ -1115,7 +1115,7 @@ bool HTTPClient::connect(void)
 #endif
 
     if (!_client) {
-        log_d("HTTPClient::begin was not called or returned error");
+        log_d("CustomHTTPClient::begin was not called or returned error");
         return false;
     }
 #ifdef HTTPCLIENT_1_1_COMPATIBLE
@@ -1149,7 +1149,7 @@ bool HTTPClient::connect(void)
  * @param type (GET, POST, ...)
  * @return status
  */
-bool HTTPClient::sendHeader(const char * type)
+bool CustomHTTPClient::sendHeader(const char * type)
 {
     if(!connected()) {
         return false;
@@ -1199,7 +1199,7 @@ bool HTTPClient::sendHeader(const char * type)
  * reads the response from the server
  * @return int http code
  */
-int HTTPClient::handleHeaderResponse()
+int CustomHTTPClient::handleHeaderResponse()
 {
 
     if(!connected()) {
@@ -1307,7 +1307,7 @@ int HTTPClient::handleHeaderResponse()
  * @param size int
  * @return < 0 = error >= 0 = size written
  */
-int HTTPClient::writeToStreamDataBlock(Stream * stream, int size)
+int CustomHTTPClient::writeToStreamDataBlock(Stream * stream, int size)
 {
     int buff_size = HTTP_TCP_BUFFER_SIZE;
     int len = size;
@@ -1422,7 +1422,7 @@ int HTTPClient::writeToStreamDataBlock(Stream * stream, int size)
  * @param error
  * @return error
  */
-int HTTPClient::returnError(int error)
+int CustomHTTPClient::returnError(int error)
 {
     if(error < 0) {
         log_w("error(%d): %s", error, errorToString(error).c_str());
@@ -1434,12 +1434,12 @@ int HTTPClient::returnError(int error)
     return error;
 }
 
-void HTTPClient::setFollowRedirects(followRedirects_t follow)
+void CustomHTTPClient::setFollowRedirects(followRedirects_t follow)
 {
     _followRedirects = follow;
 }
 
-void HTTPClient::setRedirectLimit(uint16_t limit)
+void CustomHTTPClient::setRedirectLimit(uint16_t limit)
 {
     _redirectLimit = limit;
 }
@@ -1448,7 +1448,7 @@ void HTTPClient::setRedirectLimit(uint16_t limit)
  * set the URL to a new value. Handy for following redirects.
  * @param url
  */
-bool HTTPClient::setURL(const String& url)
+bool CustomHTTPClient::setURL(const String& url)
 {
     // if the new location is only a path then only update the URI
     if (url && url[0] == '/') {
@@ -1478,7 +1478,7 @@ bool HTTPClient::setURL(const String& url)
     return beginInternal(url, _protocol.c_str());
 }
 
-const String &HTTPClient::getLocation(void)
+const String &CustomHTTPClient::getLocation(void)
 {
     return _location;
 }

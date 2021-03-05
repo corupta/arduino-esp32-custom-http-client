@@ -1,12 +1,12 @@
 /**
- * HTTPClient.h
+ * CustomHTTPClient.h
  *
  * Created on: 02.11.2015
  *
  * Copyright (c) 2015 Markus Sattler. All rights reserved.
- * This file is part of the HTTPClient for Arduino.
- * Port to ESP32 by Evandro Luis Copercini (2017), 
- * changed fingerprints to CA verification. 	
+ * This file is part of the CustomHTTPClient for Arduino.
+ * Port to ESP32 by Evandro Luis Copercini (2017),
+ * changed fingerprints to CA verification.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef HTTPClient_H_
-#define HTTPClient_H_
+#ifndef CustomHTTPClient_H_
+#define CustomHTTPClient_H_
 
 #define HTTPCLIENT_1_1_COMPATIBLE
 
@@ -142,15 +142,15 @@ class TransportTraits;
 typedef std::unique_ptr<TransportTraits> TransportTraitsPtr;
 #endif
 
-class HTTPClient
+class CustomHTTPClient
 {
 public:
-    HTTPClient();
-    ~HTTPClient();
+    CustomHTTPClient();
+    ~CustomHTTPClient();
 
 /*
- * Since both begin() functions take a reference to client as a parameter, you need to 
- * ensure the client object lives the entire time of the HTTPClient
+ * Since both begin() functions take a reference to client as a parameter, you need to
+ * ensure the client object lives the entire time of the CustomHTTPClient
  */
     bool begin(WiFiClient &client, String url);
     bool begin(WiFiClient &client, String host, uint16_t port, String uri = "/", bool https = false);
@@ -249,7 +249,7 @@ protected:
     String _uri;
     String _protocol;
     String _headers;
-    String _userAgent = "ESP32HTTPClient";
+    String _userAgent = "ESP32CustomHTTPClient";
     String _base64Authorization;
 
     /// Response handling
@@ -267,4 +267,4 @@ protected:
 
 
 
-#endif /* HTTPClient_H_ */
+#endif /* CustomHTTPClient_H_ */
